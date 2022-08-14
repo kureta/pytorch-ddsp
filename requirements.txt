@@ -10,7 +10,7 @@ hydra-colorlog==1.2.0
 hydra-optuna-sweeper==1.2.0
 
 # --------- loggers --------- #
-# wandb
+wandb>=0.13.1
 # neptune-client
 # mlflow
 # comet-ml
@@ -21,3 +21,13 @@ pre-commit      # hooks for applying linters on commit
 rich            # beautiful text formatting in terminal
 pytest          # tests
 sh              # for running bash commands in some tests
+
+# ----- project specific ----- #
+einops>=0.4.1
+dvc[ssh,s3]>=2.18.0
+jupyter>=1.0.0
+librosa>=0.9.2
+matplotlib>=3.5.3
+numpy>=1.22.4
+# torchaudio>=0.13.0
+torchcrepe @ git+https://github.com/kureta/torchcrepe.git

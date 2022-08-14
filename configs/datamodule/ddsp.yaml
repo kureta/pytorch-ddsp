@@ -1,0 +1,6 @@
+_target_: src.datamodules.ddsp_datamodule.DDSPDataModule
+
+data_path: ${paths.data_dir}/cello.pth
+batch_size: 8
+num_workers: 6
+pin_memory: True
