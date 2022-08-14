@@ -14,8 +14,8 @@ from src.utils.multiscale_stft_loss import distance
 def time_plot(value, name):
     time = np.arange(len(value))
     data = np.stack([time, value]).T
-    table = wandb.Table(columns=['time', name], data=data)
-    plot = wandb.plot.line(table, 'time', name)
+    table = wandb.Table(columns=["time", name], data=data)
+    plot = wandb.plot.line(table, "time", name)
     return plot
 
 
@@ -80,9 +80,11 @@ class DDSP(LightningModule):
             ir = wandb.Audio(ir, sample_rate=SAMPLE_RATE)
 
             # Log reverb once
-            wandb.log({
-                f"ir": ir,
-            })
+            wandb.log(
+                {
+                    "ir": ir,
+                }
+            )
 
         # Log other learned parameters, 4 samples each
         _, master_amp, overtone_amps = harm_ctrl
@@ -91,7 +93,7 @@ class DDSP(LightningModule):
             audio = wandb.Audio(y[0].cpu().numpy().T, sample_rate=SAMPLE_RATE)
             # Generate inferred harmonic oscillator master amplitude plot
             loudness = master_amp[0, 0].cpu().numpy()
-            loudness_plot = time_plot(loudness, 'loudness')
+            loudness_plot = time_plot(loudness, "loudness")
             # Generate noise band controls
             im_noise = noise_ctrl[0, 0].cpu().numpy()
             im_noise /= im_noise.max()
@@ -101,12 +103,14 @@ class DDSP(LightningModule):
             im_overtones /= im_overtones.max()
             overtone_plot = wandb.Image(im_overtones * 255)
 
-            wandb.log({
-                f"{batch_nb}": audio,
-                f"loudness_{batch_nb}": loudness_plot,
-                f"overtones_{batch_nb}": overtone_plot,
-                f"noise_bands_{batch_nb}": noise_plot,
-            })
+            wandb.log(
+                {
+                    f"{batch_nb}": audio,
+                    f"loudness_{batch_nb}": loudness_plot,
+                    f"overtones_{batch_nb}": overtone_plot,
+                    f"noise_bands_{batch_nb}": noise_plot,
+                }
+            )
 
         return loss
 

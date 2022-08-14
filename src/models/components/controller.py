@@ -26,7 +26,7 @@ class PositionalEncoding(nn.Module):
     """
 
     def __init__(self, d_model, dropout=0.1, max_len=251):
-        super(PositionalEncoding, self).__init__()
+        super().__init__()
         self.dropout = nn.Dropout(p=dropout)
 
         pe = torch.zeros(max_len, d_model)
@@ -35,7 +35,7 @@ class PositionalEncoding(nn.Module):
         pe[:, 0::2] = torch.sin(position * div_term)
         pe[:, 1::2] = torch.cos(position * div_term)
         pe = pe.unsqueeze(0).transpose(0, 1)
-        self.register_buffer('pe', pe)
+        self.register_buffer("pe", pe)
 
     def forward(self, x):
         r"""Inputs of forward function
@@ -46,7 +46,7 @@ class PositionalEncoding(nn.Module):
             output: [sequence length, batch size, embed dim]
         """
 
-        x = x + self.pe[:x.size(0), :]
+        x = x + self.pe[: x.size(0), :]
         return self.dropout(x)
 
 
@@ -54,7 +54,7 @@ class TransformerModel(nn.Module):
     """Container module with an encoder, a recurrent or transformer module, and a decoder."""
 
     def __init__(self, n_units=512, n_heads=8, n_hidden=2048, n_layers=6, dropout=0.1):
-        super(TransformerModel, self).__init__()
+        super().__init__()
         self.src_mask = None
         self.pos_encoder = PositionalEncoding(n_units, dropout)
         encoder_layers = nn.TransformerEncoderLayer(n_units, n_heads, n_hidden, dropout)
@@ -64,7 +64,9 @@ class TransformerModel(nn.Module):
     @staticmethod
     def _generate_square_subsequent_mask(sz):
         mask = (torch.triu(torch.ones(sz, sz)) == 1).transpose(0, 1)
-        mask = mask.float().masked_fill(mask == 0, float('-inf')).masked_fill(mask == 1, float(0.0))
+        mask = (
+            mask.float().masked_fill(mask == 0, float("-inf")).masked_fill(mask == 1, float(0.0))
+        )
         return mask
 
     def forward(self, src, has_mask=True):
@@ -83,15 +85,15 @@ class TransformerModel(nn.Module):
 
 class TransformerController(nn.Module):
     def __init__(
-            self,
-            in_ch: int = 1,
-            n_harmonics: int = 120,
-            n_noise_filters: int = 100,
-            n_units: int = 512,
-            n_hidden: int = 1024,
-            n_heads: int = 2,
-            n_layers: int = 3,
-            dropout: float = 0.1,
+        self,
+        in_ch: int = 1,
+        n_harmonics: int = 120,
+        n_noise_filters: int = 100,
+        n_units: int = 512,
+        n_hidden: int = 1024,
+        n_heads: int = 2,
+        n_layers: int = 3,
+        dropout: float = 0.1,
     ):
         super().__init__()
 
@@ -103,7 +105,7 @@ class TransformerController(nn.Module):
         self.dense_filter = nn.Linear(n_units, n_noise_filters)
 
     def forward(
-            self, f0: Tensor, loudness: Tensor
+        self, f0: Tensor, loudness: Tensor
     ) -> Tuple[Tuple[Tensor, Tensor, Tensor], Tensor]:
         # comes b, ch, t, linear needs b, t, ch, transformer needs t, b, ch
         features = torch.cat([f0, loudness], dim=1).transpose(1, 2)
@@ -129,7 +131,7 @@ class TransformerController(nn.Module):
 
 class MLP(nn.Module):
     def __init__(
-            self, n_input: int, n_units: int, n_layer: int, relu: Type[nn.Module] = nn.LeakyReLU
+        self, n_input: int, n_units: int, n_layer: int, relu: Type[nn.Module] = nn.LeakyReLU
     ):
         super().__init__()
         self.n_layer = n_layer

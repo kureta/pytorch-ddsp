@@ -34,7 +34,7 @@ def cents_to_frequency(cents):
 
 
 def freqs_to_cents(freq):
-    return 1200 * torch.log2(freq / 10.)
+    return 1200 * torch.log2(freq / 10.0)
 
 
 def cents_to_bins(cents):

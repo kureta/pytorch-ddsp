@@ -1,14 +1,15 @@
 import torch
 import torch.nn.functional as F
 import torchaudio.functional as AF
-from .constants import SAMPLE_RATE
 import torchcrepe
 from einops import rearrange
+
+from .constants import SAMPLE_RATE
 
 
 class CrepeLoss:
     def __init__(self):
-        self.crepe = torchcrepe.Crepe('tiny').cuda()
+        self.crepe = torchcrepe.Crepe("tiny").cuda()
         for param in self.crepe.parameters():
             param.requires_grad = False
 
@@ -20,8 +21,9 @@ class CrepeLoss:
         example = rearrange(example, "b c t -> (b c) t")
 
         example = example - example.mean(dim=1, keepdim=True)
-        example = example / torch.max(torch.tensor(1e-10, device=example.device),
-                                      example.std(dim=1, keepdim=True))
+        example = example / torch.max(
+            torch.tensor(1e-10, device=example.device), example.std(dim=1, keepdim=True)
+        )
 
         embedded = self.crepe.embed(example)
 

@@ -32,7 +32,9 @@ class ConvolutionalReverb(nn.Module):
         return ir * 1e-4
 
     def forward(self, x: torch.Tensor):
-        ir = torch.concat([F.tanh(self.ir), torch.ones(*self.ir.shape[:-1], 1, device=x.device)], dim=-1)
+        ir = torch.concat(
+            [F.tanh(self.ir), torch.ones(*self.ir.shape[:-1], 1, device=x.device)], dim=-1
+        )
         out = F.pad(x, (ir.shape[-1] - 1, 0))
         out = fft_conv1d(out, ir, block_ratio=self.block_ratio)
 
