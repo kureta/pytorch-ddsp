@@ -5,7 +5,7 @@ import torch.nn.functional as F  # noqa
 from einops.layers.torch import Reduce
 
 from src.utils.constants import HOP_LENGTH, SAMPLE_RATE
-from src.utils.helpers import bins_to_cents, cents_to_frequency
+from src.utils.helpers import bins_to_cents, cents_to_freqs
 
 
 class HarmonicOscillator(nn.Module):
@@ -26,7 +26,6 @@ class HarmonicOscillator(nn.Module):
         # f0.shape = [batch, n_channels, time]
         # master_amplitude.shape = [batch, n_channels, time]
         # overtone_amplitudes = [batch, n_channels, n_harmonics, time]
-        f0 = cents_to_frequency(bins_to_cents(f0 * 359))
 
         # Convert f0 from Hz to radians / sample
         # This is faster and does not explode freq values when using 16-bit precision.

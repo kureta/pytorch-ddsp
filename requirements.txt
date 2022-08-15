@@ -31,3 +31,4 @@ matplotlib>=3.5.3
 numpy>=1.22.4
 # torchaudio>=0.13.0
 torchcrepe @ git+https://github.com/kureta/torchcrepe.git
+tqdm>=4.64.0

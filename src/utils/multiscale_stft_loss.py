@@ -21,7 +21,7 @@ def multiscale_stft(signal, scales, overlap):
         S = torch.stft(  # noqa
             signal,
             s,
-            256 * 3,
+            int(s * (1 - overlap)),
             s,
             torch.hann_window(s).to(signal),
             center=True,
@@ -41,7 +41,7 @@ def log_distance(x, y):
 
 
 def distance(x, y):
-    scales = [1024 * 3]
+    scales = [4096, 2048, 1024, 512, 256, 128]
     x = multiscale_stft(x, scales, 0.75)
     y = multiscale_stft(y, scales, 0.75)
 

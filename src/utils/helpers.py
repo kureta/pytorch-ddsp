@@ -29,7 +29,7 @@ def bins_to_cents(bins):
     return cents
 
 
-def cents_to_frequency(cents):
+def cents_to_freqs(cents):
     return 10 * 2 ** (cents / 1200)
 
 
