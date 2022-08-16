@@ -7,5 +7,3 @@
 ['remote "minio"']
     url = s3://ddsp-data
     endpointurl = https://cloud.kureta.xyz
-    access_key_id = user
-    secret_access_key = 314159265
