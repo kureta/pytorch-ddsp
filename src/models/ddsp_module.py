@@ -50,7 +50,7 @@ class DDSP(LightningModule):
         harm = self.harmonics(*harm_ctrl)
         # noise = self.noise(noise_ctrl)
         # out = self.reverb(harm + noise)
-        out = torch.stack([harm, harm], dim=1)
+        out = torch.cat([harm, harm], dim=1)
 
         return out
 
@@ -72,7 +72,7 @@ class DDSP(LightningModule):
             harm = self.harmonics(*harm_ctrl)
             # noise = self.noise(noise_ctrl)
             # y = self.reverb(harm + noise)
-            y = torch.stack([harm, harm], dim=1)
+            y = torch.cat([harm, harm], dim=1)
             loss = distance(x, y)
             amp_loss = F.l1_loss(self.amp_loss.get_amp(x), self.amp_loss.get_amp(y))
             loss += amp_loss
