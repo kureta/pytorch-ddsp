@@ -48,8 +48,9 @@ class DDSP(LightningModule):
     def forward(self, pitch, loudness):
         harm_ctrl, noise_ctrl = self.controller(pitch, loudness)
         harm = self.harmonics(*harm_ctrl)
-        noise = self.noise(noise_ctrl)
-        out = self.reverb(harm + noise)
+        # noise = self.noise(noise_ctrl)
+        # out = self.reverb(harm + noise)
+        out = torch.stack([harm, harm], dim=1)
 
         return out
 
@@ -69,8 +70,9 @@ class DDSP(LightningModule):
         with torch.no_grad():
             harm_ctrl, noise_ctrl = self.controller(f0, amp)
             harm = self.harmonics(*harm_ctrl)
-            noise = self.noise(noise_ctrl)
-            y = self.reverb(harm + noise)
+            # noise = self.noise(noise_ctrl)
+            # y = self.reverb(harm + noise)
+            y = torch.stack([harm, harm], dim=1)
             loss = distance(x, y)
             amp_loss = F.l1_loss(self.amp_loss.get_amp(x), self.amp_loss.get_amp(y))
             loss += amp_loss
