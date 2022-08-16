@@ -45,7 +45,8 @@ class Loudness(nn.Module):
             hop_length=HOP_LENGTH,
             window=window,
             return_complex=True,
-            pad_mode="reflect",
+            # pad_mode="reflect",
+            center=False,
             normalized=True,
         ).transpose(1, 2)
 
@@ -82,7 +83,7 @@ def get_f0(x, batch_size=128):
         x,
         sample_rate=CREPE_SAMPLE_RATE,
         hop_length=CREPE_HOP_LENGTH,
-        pad=True,
+        pad=False,
         fmin=31.7,
         batch_size=batch_size,
         decoder=torchcrepe.decode.weighted_argmax,

@@ -5,7 +5,7 @@ import torch
 import torch.nn.functional as F
 import torchaudio.functional as AF
 from torch.utils.data import Dataset
-from tqdm import tqdm
+from tqdm import tqdm, trange
 
 from src import utils
 from src.utils.constants import HOP_LENGTH, N_FFT, SAMPLE_RATE
@@ -17,7 +17,7 @@ log = utils.get_pylogger(__name__)
 def generate_data(wav_dir: Path, path: Path):
     ld = Loudness().cuda()
 
-    wav_files = list(wav_dir.glob("*.[wav]*"))[:32]
+    wav_files = list(wav_dir.glob("*.[wav]*"))
 
     wav_data = []
     ld_data = []
@@ -28,19 +28,27 @@ def generate_data(wav_dir: Path, path: Path):
         audio = AF.resample(audio.unsqueeze(0), 44100, SAMPLE_RATE)
         if (diff := audio.shape[-1] % HOP_LENGTH) != 0:
             audio = F.pad(audio, (0, HOP_LENGTH - diff))
-        audio = F.pad(audio, (0, N_FFT // 2))
-        loudness = ld.get_amp(audio)
-        f0 = get_f0(audio)
 
-        if loudness.shape != f0.shape:
-            print(loudness.shape, f0.shape, audio.shape)
+        wav_data.append(audio[0])
+
+    wav_data = torch.cat(wav_data, dim=1)
+    length = wav_data.shape[-1]
+    size = 10 * SAMPLE_RATE
+    for idx in trange(length // size):
+        end = min(idx + size, length)
+        audio = wav_data[..., idx:end].unsqueeze(0)
+        loudness = ld.get_amp(F.pad(audio, (N_FFT // 2, N_FFT // 2)))
+        f0 = get_f0(F.pad(audio, (N_FFT // 2, N_FFT // 2)))
+
+        if loudness.shape != f0.shape or loudness.shape[-1] != (audio.shape[-1] // HOP_LENGTH + 1):
+            log.error(
+                "Incompatible feature dimensions." f"{loudness.shape, f0.shape, audio.shape}"
+            )
             exit()
-
-        wav_data.append(audio[0].cpu())
         ld_data.append(loudness[0].cpu())
         f0_data.append(f0[0].cpu())
 
-    wav_data = torch.cat(wav_data, dim=1)
+    wav_data = wav_data.cpu()
     ld_data = torch.cat(ld_data, dim=1)
     f0_data = torch.cat(f0_data, dim=1)
 
@@ -82,4 +90,4 @@ class DDSPDataset(Dataset):
         return len(self.f0)
 
     def __getitem__(self, idx):
-        return (self.f0[idx], self.loudness[idx], self.audio[idx])
+        return self.f0[idx], self.loudness[idx], self.audio[idx]
