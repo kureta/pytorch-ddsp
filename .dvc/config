@@ -1,7 +1,7 @@
 [core]
     analytics = false
     autostage = true
-    remote = kureta
+    remote = minio
 ['remote "kureta"']
     url = ssh://cloud.kureta.xyz/mnt/Pi-Disk/MLDATA/ddsp
 ['remote "minio"']
