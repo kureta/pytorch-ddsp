@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+import torch.nn.functional as F
 import wandb
 from pytorch_lightning import LightningModule
 
@@ -8,6 +9,7 @@ from src.models.components.filtered_noise import FilteredNoise
 from src.models.components.harmonic_oscillator import HarmonicOscillator
 from src.models.components.reverb import ConvolutionalReverb
 from src.utils.constants import SAMPLE_RATE
+from src.utils.features import Loudness
 from src.utils.multiscale_stft_loss import distance
 
 
@@ -41,6 +43,7 @@ class DDSP(LightningModule):
         self.harmonics = HarmonicOscillator(n_harmonics, in_ch)
         self.noise = FilteredNoise(n_filters, in_ch)
         self.reverb = ConvolutionalReverb(reverb_dur, in_ch, out_ch)
+        self.amp_loss = Loudness()
 
     def forward(self, pitch, loudness):
         harm_ctrl, noise_ctrl = self.controller(pitch, loudness)
@@ -54,6 +57,8 @@ class DDSP(LightningModule):
         f0, amp, x = batch
         y = self(f0, amp)
         loss = distance(x, y)
+        amp_loss = F.l1_loss(self.amp_loss.get_amp(x), self.amp_loss.get_amp(y))
+        loss += amp_loss
 
         self.log("train/loss", loss)
 
@@ -67,6 +72,8 @@ class DDSP(LightningModule):
             noise = self.noise(noise_ctrl)
             y = self.reverb(harm + noise)
             loss = distance(x, y)
+            amp_loss = F.l1_loss(self.amp_loss.get_amp(x), self.amp_loss.get_amp(y))
+            loss += amp_loss
 
         # Log all the things
         self.log("val/loss", loss)
