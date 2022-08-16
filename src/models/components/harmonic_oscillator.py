@@ -40,7 +40,7 @@ class HarmonicOscillator(nn.Module):
         # normalize harmonic_distribution so it always sums to one
         overtone_amplitudes /= torch.sum(overtone_amplitudes, dim=2, keepdim=True)
         # scale individual overtone amplitudes by the master amplitude
-        # overtone_amplitudes = torch.einsum("bcot,bct->bcot", overtone_amplitudes, master_amplitude)
+        overtone_amplitudes = torch.einsum("bcot,bct->bcot", overtone_amplitudes, master_amplitude)
 
         # stretch controls by hop_size
         # refactor stretch into a function or a method
@@ -73,10 +73,4 @@ class HarmonicOscillator(nn.Module):
         sinusoids = torch.einsum("bcot,bcot->bcot", sinusoids, overtone_amplitudes)
         signal = self.sum_sinusoids(sinusoids)
 
-        master_amplitude = F.interpolate(
-            master_amplitude[:, :, None, :],
-            size=(master_amplitude.shape[-2], (f0.shape[-1] - 1) * HOP_LENGTH),
-            mode="bilinear",
-            align_corners=True,
-        ).squeeze(2)
-        return signal * master_amplitude
+        return signal
