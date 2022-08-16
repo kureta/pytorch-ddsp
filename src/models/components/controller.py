@@ -4,6 +4,7 @@ from typing import Tuple, Type
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 from torch import Tensor
 
 
@@ -214,7 +215,7 @@ class Controller(nn.Module):
         latent = self.mlp_gru(latent)
 
         overtone_amplitudes = modified_sigmoid(self.dense_harmonic(latent))
-        master_amplitude = modified_sigmoid(self.dense_loudness(latent))
+        master_amplitude = F.relu(self.dense_loudness(latent))
 
         noise_distribution = self.dense_filter(latent)
         noise_distribution = modified_sigmoid(noise_distribution)
