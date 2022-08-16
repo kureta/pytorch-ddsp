@@ -73,4 +73,10 @@ class HarmonicOscillator(nn.Module):
         sinusoids = torch.einsum("bcot,bcot->bcot", sinusoids, overtone_amplitudes)
         signal = self.sum_sinusoids(sinusoids)
 
+        master_amplitude = F.interpolate(
+            master_amplitude[:, :, None, :],
+            size=(master_amplitude.shape[-2], (f0.shape[-1] - 1) * HOP_LENGTH),
+            mode="bilinear",
+            align_corners=True,
+        ).squeeze(2)
         return signal * master_amplitude
