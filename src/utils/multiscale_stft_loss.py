@@ -45,12 +45,16 @@ def log_l1_loss(x, y):
     return F.l1_loss(torch.log(x + 1e-7), torch.log(y + 1e-7))
 
 
+def cosine_loss(x, y):
+    return torch.mean(1 - F.cosine_similarity(x, y, dim=1))
+
+
 def distance(x, y):
     scales = [4096, 2048, 1024, 512, 256, 128]
     x = multiscale_stft(x, scales, 0.75)
     y = multiscale_stft(y, scales, 0.75)
 
-    lin = sum(map(F.l1_loss, x, y)) / len(scales)
-    log = sum(map(log_l1_loss, x, y)) / len(scales)
+    lin = sum(map(cosine_loss, x, y)) / len(scales)
+    log = sum(map(cosine_loss, x, y)) / len(scales)
 
     return lin + log
