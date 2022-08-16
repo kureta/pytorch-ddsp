@@ -8,7 +8,7 @@ from src.models.components.controller import Controller
 from src.models.components.filtered_noise import FilteredNoise
 from src.models.components.harmonic_oscillator import HarmonicOscillator
 from src.models.components.reverb import ConvolutionalReverb
-from src.utils.constants import SAMPLE_RATE
+from src.utils.constants import N_FFT, SAMPLE_RATE
 from src.utils.features import Loudness
 from src.utils.multiscale_stft_loss import distance
 
@@ -48,9 +48,8 @@ class DDSP(LightningModule):
     def forward(self, pitch, loudness):
         harm_ctrl, noise_ctrl = self.controller(pitch, loudness)
         harm = self.harmonics(*harm_ctrl)
-        # noise = self.noise(noise_ctrl)
-        # out = self.reverb(harm + noise)
-        out = torch.cat([harm, harm], dim=1)
+        noise = self.noise(noise_ctrl)
+        out = self.reverb(harm + noise)
 
         return out
 
@@ -58,7 +57,10 @@ class DDSP(LightningModule):
         f0, amp, x = batch
         y = self(f0, amp)
         loss = distance(x, y)
-        amp_loss = F.l1_loss(self.amp_loss.get_amp(x), self.amp_loss.get_amp(y))
+        amp_loss = F.l1_loss(
+            F.pad(self.amp_loss.get_amp(x), (N_FFT // 2, N_FFT // 2)),
+            F.pad(self.amp_loss.get_amp(y), (N_FFT // 2, N_FFT // 2)),
+        )
         loss += amp_loss
 
         self.log("train/loss", loss)
@@ -70,11 +72,13 @@ class DDSP(LightningModule):
         with torch.no_grad():
             harm_ctrl, noise_ctrl = self.controller(f0, amp)
             harm = self.harmonics(*harm_ctrl)
-            # noise = self.noise(noise_ctrl)
-            # y = self.reverb(harm + noise)
-            y = torch.cat([harm, harm], dim=1)
+            noise = self.noise(noise_ctrl)
+            y = self.reverb(harm + noise)
             loss = distance(x, y)
-            amp_loss = F.l1_loss(self.amp_loss.get_amp(x), self.amp_loss.get_amp(y))
+            amp_loss = F.l1_loss(
+                F.pad(self.amp_loss.get_amp(x), (N_FFT // 2, N_FFT // 2)),
+                F.pad(self.amp_loss.get_amp(y), (N_FFT // 2, N_FFT // 2)),
+            )
             loss += amp_loss
 
         # Log all the things

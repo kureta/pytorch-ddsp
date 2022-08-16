@@ -17,6 +17,7 @@ model:
   lr: 0.001
 
 datamodule:
+  example_duration: 4
   batch_size: 8
 
 logger:
