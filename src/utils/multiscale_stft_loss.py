@@ -51,6 +51,6 @@ def distance(x, y):
     y = multiscale_stft(y, scales, 0.75)
 
     lin = sum(map(F.l1_loss, x, y)) / len(scales)
-    log = sum(map(log_distance, x, y)) / len(scales)
+    log = sum(map(log_l1_loss, x, y)) / len(scales)
 
     return lin + log
